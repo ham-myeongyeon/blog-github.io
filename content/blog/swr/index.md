@@ -1,6 +1,6 @@
 ---
 title: swr 내부분석
-date: '2015-05-01T22:12:03.284Z'
+date: '2024-03-11T08:16:40.250109Z'
 description: 'swr라이브러리 코드를 구현해보면서 학습한 내용을 글로 정리했습니다. 이 글은 swr라이브러리의 사용법 보다는 내부를 파악한 내용으로 구성되어 있습니다. swr내부에는 크게 어떤 요소들로 이루어져 있고, 또 어떤 흐름으로 활용되는지 설명하겠습니다.'
 ---
 
@@ -26,21 +26,17 @@ swr라이브러리 코드를 구현해보면서 학습한 내용을 글로 정�
 
 전체적으로 크게 `SWRGlobalState`와 `config`, 그리고 `useSwr`로 구성되어 있습니다.
 
-![기본구조.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/0eb3b4cf-22e6-4f2d-b07f-993e1ef86039/%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%80%E1%85%AE%E1%84%8C%E1%85%A9.png)
+![structure](./structure.png)
 
 ### SWRGlobalState
 
-![SwrGlobalState.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/f8401433-2491-4395-bb80-029f592ac4f8/SwrGlobalState.png)
+![swrGlobalState.png](./swrGlobalState.png)
 
 `SWRGlobalState`는 `swr`에서 관리되는 `cache`를 키로 하고, 전역에서 상태를 관리하는 요소들로 이루어진 `GlobalState`를 값으로 맵핑한 `WeakMap` 자료구조로 되어 있습니다.
 
-<aside>
-💡 `WeakMap`?
-`WeakMap`은 `Map`과 같은 객체 자료구조로이지만 차이점은 키로 원시값이 대신 객체만 받게 됩니다. 여기서는 키로 `Cache`라는 객체를 받게 됩니다. 
-또한 `Map`과의 차이점은 프로그램 내에 객체에 대한 참조가 `WeakMap`을 제외하고 존재하지 않으면 가비지로 수거되는 특징이 있습니다.
-그래서 메모리 누수에서 이점이 있고 `swr`에서는 이러한 이점을 이용하기 위해 `WeakMap`을 이용한것으로 보입니다.
-
-</aside>
+> 💡 `WeakMap`이란?<br> `WeakMap`은 `Map`과 같은 객체 자료구조로이지만 차이점은 키로 원시값이 대신 객체만 받게 됩니다. 여기서는 키로 `Cache`라는 객체를 받게 됩니다.
+> 또한 `Map`과의 차이점은 프로그램 내에 객체에 대한 참조가 `WeakMap`을 제외하고 존재하지 않으면 가비지로 수거되는 특징이 있습니다.
+> 그래서 메모리 누수에서 이점이 있고 `swr`에서는 이러한 이점을 이용하기 위해 `WeakMap`을 이용한것으로 보입니다.
 
 여기서 `cache`는 데이터를 저장하고 활용하는 메커니즘이며 형태는 `useSwr`을 구분하는 고유한 식별자 `key`와, 그에 해당하는 데이터 `state`를 맵핑하는 인스턴스입니다.
 
@@ -76,7 +72,7 @@ export interface Cache<Data = any> {
 
 ### Config
 
-![Config.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/35949df9-a5d5-4927-8f94-e8ad9f423187/Config.png)
+![config.png](./config.png)
 
 `config`는 `swr`에 사용되는 옵션 값들과 `cache`를 담고 있으며 `useSwr`에 제공합니다.
 
@@ -154,16 +150,16 @@ const SWRConfig: FC<
 
 ### useSwr
 
-![useswr.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/324e81dc-6d30-401a-8287-d3323352e539/useswr.png)
+![useSwr.png](./useSwr.png)
 
 `useSwr`은 컴포넌트 영역에서 직접 사용되는 `hook`입니다. 데이터를 패칭하고 `state`를 관리하며 필요에 따라 데이터를 재검증합니다.
 `config`의 `cache`와 옵션 값을 전달받아 컴포넌트에 이용될 `state`를 관리합니다.
 
 ## 실행 과정
 
-![흐름도.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/0ed2d3a6-64db-4339-97c5-1e243b1b3c2d/%E1%84%92%E1%85%B3%E1%84%85%E1%85%B3%E1%86%B7%E1%84%83%E1%85%A9.png)
+![flow.png](./flow.png)
 
-### 초기 실행
+### 초기 캐시 전달과정
 
 프로젝트 초기 실행시 `defaultConfig`가 기본으로 사용됩니다. 물론 상위 컴포넌트에 `SWRConfig`를 통해서 하위 컴포넌트의 `useSwr`에 제공할수 있지만 `SWRConfig`를 사용하지 않는 것을 가정으로 설명하겠습니다.
 
@@ -423,7 +419,7 @@ const useSWR = withArgs<SWRHook>(useSWRHandler)
 export default useSWR
 ```
 
-### 상위 Config 전달
+### 상위 Config 전달과정
 
 만약 상위에 `SWRConfig`를 이용하게 되면 전역적으로 `config`를 제공할수 있습니다.
 
@@ -474,7 +470,7 @@ const SWRConfig: FC<
 
 ```
 
-## 정리
+## 마치며
 
 최근에 swr 라이브러리를 파악해보고자 직접 기본적인구조만 구현해봤고, 이를 토대로 학습한 내용을 정리해봤습니다.
 
