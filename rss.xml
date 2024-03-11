@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Gatsby Starter Blog RSS Feed]]></title><description><![CDATA[A starter blog demonstrating what Gatsby can do.]]></description><link>https://gatsbystarterblogsource.gatsbyjs.io</link><generator>GatsbyJS</generator><lastBuildDate>Sun, 10 Mar 2024 14:53:33 GMT</lastBuildDate><item><title><![CDATA[swr 내부분석]]></title><description><![CDATA[swr라이브러리 코드를 구현해보면서 학습한 내용을 글로 정리했습니다. 이 글은 swr라이브러리의 사용법 보다는 내부를 파악한 내용으로 구성되어 있습니다. swr…]]></description><link>https://gatsbystarterblogsource.gatsbyjs.io/swr/</link><guid isPermaLink="false">https://gatsbystarterblogsource.gatsbyjs.io/swr/</guid><pubDate>Fri, 01 May 2015 22:12:03 GMT</pubDate><content:encoded>&lt;p&gt;swr라이브러리 코드를 구현해보면서 학습한 내용을 글로 정리했습니다. 이 글은 swr라이브러리의 사용법 보다는 내부를 파악한 내용으로 구성되어 있습니다. swr내부에는 크게 어떤 요소들로 이루어져 있고, 또 어떤 흐름으로 활용되는지 설명하겠습니다.&lt;/p&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Gatsby Starter Blog RSS Feed]]></title><description><![CDATA[Gatsby Starter Blog RSS Feed]]></description><link>https://gatsbystarterblogsource.gatsbyjs.io</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 11 Mar 2024 11:59:07 GMT</lastBuildDate><item><title><![CDATA[swr 내부분석]]></title><description><![CDATA[swr라이브러리 코드를 구현해보면서 학습한 내용을 글로 정리했습니다. 이 글은 swr라이브러리의 사용법 보다는 내부를 파악한 내용으로 구성되어 있습니다. swr…]]></description><link>https://gatsbystarterblogsource.gatsbyjs.io/swr/</link><guid isPermaLink="false">https://gatsbystarterblogsource.gatsbyjs.io/swr/</guid><pubDate>Mon, 11 Mar 2024 08:16:40 GMT</pubDate><content:encoded>&lt;p&gt;swr라이브러리 코드를 구현해보면서 학습한 내용을 글로 정리했습니다. 이 글은 swr라이브러리의 사용법 보다는 내부를 파악한 내용으로 구성되어 있습니다. swr내부에는 크게 어떤 요소들로 이루어져 있고, 또 어떤 흐름으로 활용되는지 설명하겠습니다.&lt;/p&gt;
 &lt;h2&gt;SWR 주요 요소들&lt;/h2&gt;
+&lt;hr&gt;
 &lt;p&gt;앞으로 설명드릴 주요 요소들의 코드 디렉토리는 다음과 같이 있습니다.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;├── _internal
 │   └── utils
@@ -13,16 +14,77 @@
     └── use-swr.ts
 				...&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;전체적으로 크게 &lt;code class=&quot;language-text&quot;&gt;SWRGlobalState&lt;/code&gt;와 &lt;code class=&quot;language-text&quot;&gt;config&lt;/code&gt;, 그리고 &lt;code class=&quot;language-text&quot;&gt;useSwr&lt;/code&gt;로 구성되어 있습니다.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/0eb3b4cf-22e6-4f2d-b07f-993e1ef86039/%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%80%E1%85%AE%E1%84%8C%E1%85%A9.png&quot; alt=&quot;기본구조.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 630px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/blog/static/5c9784703cb57e551d0936bfa647ebee/a3bed/structure.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 62.65822784810127%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAANCAYAAACpUE5eAAAACXBIWXMAAAsTAAALEwEAmpwYAAABhElEQVR42oVT25aCMAzkC6Q0vYIiirues/uw//912ZlSFH3AhzG0kMlkEpuu63QLs8a21ev5rH8/P/p7v2ufUrkzb9+/o3knE2s1OVfIcgjaHg7aGaOXcdRT36sX2SV9IbRA9r6Qfl+vehoGPUCVQ4H77VZISRhxNp8I+QGVrQotVAUk8+wAwfuIM59D/W6fEASrOkaL6GtiIQZ4T4W+FjKfWiYySNjqEUNgay2tqKrjBrstt/CJ0WMICbiAcG3fVZCECql2STYlz7QGQ+sWkJCVQoww3muPKfKZ6yGVZIvim6BVa1S86Pw16ziNuEMXDu8sCD1+plMPZOxafEy7KIev9NZUj0sSMM0XPc+TuujVJfgdRC0KMDZeastIiILK9ukH18VuprmqyEPWOGDRbffSspCwNds9NFDpNcakAV4O9BLD8fAu5aTpmIuKRTWKR/cyEJ4bgR/rBdUSZrNKjwTuYnBFZWnPyaLYbAmhMDqDiWIwIHKy/z8tZCAukZAnWJAe/gNktz4rr0YxvQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;structure&quot;
+        title=&quot;&quot;
+        src=&quot;/blog/static/5c9784703cb57e551d0936bfa647ebee/f058b/structure.png&quot;
+        srcset=&quot;/blog/static/5c9784703cb57e551d0936bfa647ebee/c26ae/structure.png 158w,
+/blog/static/5c9784703cb57e551d0936bfa647ebee/6bdcf/structure.png 315w,
+/blog/static/5c9784703cb57e551d0936bfa647ebee/f058b/structure.png 630w,
+/blog/static/5c9784703cb57e551d0936bfa647ebee/40601/structure.png 945w,
+/blog/static/5c9784703cb57e551d0936bfa647ebee/78612/structure.png 1260w,
+/blog/static/5c9784703cb57e551d0936bfa647ebee/a3bed/structure.png 1721w&quot;
+        sizes=&quot;(max-width: 630px) 100vw, 630px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
 &lt;h3&gt;SWRGlobalState&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/f8401433-2491-4395-bb80-029f592ac4f8/SwrGlobalState.png&quot; alt=&quot;SwrGlobalState.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 630px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/blog/static/4d4237460d90d6796d29681997606dfe/99072/swrGlobalState.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 69.62025316455697%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAYAAAAvxDzwAAAACXBIWXMAAAsTAAALEwEAmpwYAAACGUlEQVR42m2TS3PiQAyEfQ8BP7AN+IF52RDwhsCF3DbX/P//o/16amaL2uxhauSR1Gq15ChJEvv3xP6M7+/2+Py02/1ul3F096/r1fI8t1kcW/qf3OgHEIH5fG7rxcKuu52N260du87eNhsb1ms7tK0tsswS4mb+pD8AvaMEqKZ6RUJbFFZw52lqGTFzjvx7Ctxged7v7VBVtuBNucJwgLE3mrK0FWANQWq14Hs6mznWCaCyq6axD3y/Hw/7ALSpa6spvFut/nboGKrSErDJdGpD39v315edj0eb8p0CFoLFtFsuHdMNt9i9UkhE9K7WIzGrqDLB4QL5TgFqsHNajr1GaqtF19Mw2NvlYiPnjKbyOfZgSPdIlWa+7QMtlDhSwBY4tzAP7OYwbfDtDwe73242nE7WE18QG/sZCCsSqipI/J6KK0AatGqZ5sBkM8+u8AOTthfYVYAp1wH6mDW+qPOAclQkaAA1wS+TidNmTtthAxQr9kf0LbFX2M+AGlC0g2buk5RQApLjyABWC2HJA8MlE5V+Ld1Ib72LkAo7DWW4RC009p4EMdNden3C0kpDaXvVyiCJWsz8Fmh1lB/FfmGFrgc5dWtdwoRT/wdJkjOL3TOQM+ulVcuI7fwKqUu3hy4RAIG2VC3Dymgl8KklnVdsN2kAeoa35a69PKGT6Pk/VoWghVoQuGwtvgCksfZNcqjdoH389C//AXwAZL4sVQP+AAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;swrGlobalState.png&quot;
+        title=&quot;&quot;
+        src=&quot;/blog/static/4d4237460d90d6796d29681997606dfe/f058b/swrGlobalState.png&quot;
+        srcset=&quot;/blog/static/4d4237460d90d6796d29681997606dfe/c26ae/swrGlobalState.png 158w,
+/blog/static/4d4237460d90d6796d29681997606dfe/6bdcf/swrGlobalState.png 315w,
+/blog/static/4d4237460d90d6796d29681997606dfe/f058b/swrGlobalState.png 630w,
+/blog/static/4d4237460d90d6796d29681997606dfe/99072/swrGlobalState.png 842w&quot;
+        sizes=&quot;(max-width: 630px) 100vw, 630px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;SWRGlobalState&lt;/code&gt;는 &lt;code class=&quot;language-text&quot;&gt;swr&lt;/code&gt;에서 관리되는 &lt;code class=&quot;language-text&quot;&gt;cache&lt;/code&gt;를 키로 하고, 전역에서 상태를 관리하는 요소들로 이루어진 &lt;code class=&quot;language-text&quot;&gt;GlobalState&lt;/code&gt;를 값으로 맵핑한 &lt;code class=&quot;language-text&quot;&gt;WeakMap&lt;/code&gt; 자료구조로 되어 있습니다.&lt;/p&gt;
-&lt;aside&gt;
-💡 `WeakMap`?
-`WeakMap`은 `Map`과 같은 객체 자료구조로이지만 차이점은 키로 원시값이 대신 객체만 받게 됩니다. 여기서는 키로 `Cache`라는 객체를 받게 됩니다. 
-또한 `Map`과의 차이점은 프로그램 내에 객체에 대한 참조가 `WeakMap`을 제외하고 존재하지 않으면 가비지로 수거되는 특징이 있습니다.
-그래서 메모리 누수에서 이점이 있고 `swr`에서는 이러한 이점을 이용하기 위해 `WeakMap`을 이용한것으로 보입니다.
-&lt;/aside&gt;
+&lt;blockquote&gt;
+&lt;p&gt;💡 &lt;code class=&quot;language-text&quot;&gt;WeakMap&lt;/code&gt;이란?&lt;br&gt; &lt;code class=&quot;language-text&quot;&gt;WeakMap&lt;/code&gt;은 &lt;code class=&quot;language-text&quot;&gt;Map&lt;/code&gt;과 같은 객체 자료구조로이지만 차이점은 키로 원시값이 대신 객체만 받게 됩니다. 여기서는 키로 &lt;code class=&quot;language-text&quot;&gt;Cache&lt;/code&gt;라는 객체를 받게 됩니다.
+또한 &lt;code class=&quot;language-text&quot;&gt;Map&lt;/code&gt;과의 차이점은 프로그램 내에 객체에 대한 참조가 &lt;code class=&quot;language-text&quot;&gt;WeakMap&lt;/code&gt;을 제외하고 존재하지 않으면 가비지로 수거되는 특징이 있습니다.
+그래서 메모리 누수에서 이점이 있고 &lt;code class=&quot;language-text&quot;&gt;swr&lt;/code&gt;에서는 이러한 이점을 이용하기 위해 &lt;code class=&quot;language-text&quot;&gt;WeakMap&lt;/code&gt;을 이용한것으로 보입니다.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;여기서 &lt;code class=&quot;language-text&quot;&gt;cache&lt;/code&gt;는 데이터를 저장하고 활용하는 메커니즘이며 형태는 &lt;code class=&quot;language-text&quot;&gt;useSwr&lt;/code&gt;을 구분하는 고유한 식별자 &lt;code class=&quot;language-text&quot;&gt;key&lt;/code&gt;와, 그에 해당하는 데이터 &lt;code class=&quot;language-text&quot;&gt;state&lt;/code&gt;를 맵핑하는 인스턴스입니다.&lt;/p&gt;
 &lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;GlobalState&lt;/code&gt;는 &lt;code class=&quot;language-text&quot;&gt;swr&lt;/code&gt;에서 사용되는 상태를 관리하는 요소들의 집합이며 &lt;code class=&quot;language-text&quot;&gt;Revalidators&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;Mutations&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;Fetch&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;Preload&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;Mutator&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;Setter&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;Subscriber&lt;/code&gt;등을 배열로 저장합니다.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;tsx&quot;&gt;&lt;pre class=&quot;language-tsx&quot;&gt;&lt;code class=&quot;language-tsx&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;// global-state.ts&lt;/span&gt;
@@ -51,7 +113,36 @@
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3&gt;Config&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/35949df9-a5d5-4927-8f94-e8ad9f423187/Config.png&quot; alt=&quot;Config.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 595px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/blog/static/28fbd1720d1b4bf6baaab7665a637d77/3dd3e/config.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 50.632911392405056%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAKCAYAAAC0VX7mAAAACXBIWXMAAAsTAAALEwEAmpwYAAABs0lEQVR42m1S2XKjMBDkaR9iQAcCCXQAduIrEFdczv9/WmdGjrOu2n1odExremboQimFB6RUaJoWfT9AN4bOEs/xDLp7HQacQsgYug7iiVc8NoKTKSLPEbfPFYfdTGcBqTSBYlqjqmu8jSPeCX82G0RrsaSEihJqiueETNaEZCV2fY3BlBiaF3hT0R2hK9GaBrevL5yOR3xcLljmGWeqbqXE5kfo0U3R0GdyEs5IWFL0MWHwIaOn1nZTxOdpi3lKaNsOVVWhJFhjIISA9x636w1bEpFSoIhWwLUKL2WFkRTXdcFhv8eRqlmWd/gQ0RmNrSvzrFi07/u8F7WATT3CPsFNA1SjUSSqrqolQvAYqCIm8/p46JyjuMAhCIwpksiK6/WKaZzQBYvGNfd2SbSdLIo3L/OD7XbOVZ3PZ3q05HVd11x1zXGvc1sxxix0+bhg2s9QnYamGeuWEzoUkxPoqeVNVef5MOr6776sqC2jMBKPh89z44qYI4WEGVq0ycKENifOtnntBVng/uvvNrmDzyw2Oo6pX2sweJ/5lJShGPLHNkwInczW4fUZvpO/pv/H5P/BNzDi/TH4cO4EAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;config.png&quot;
+        title=&quot;&quot;
+        src=&quot;/blog/static/28fbd1720d1b4bf6baaab7665a637d77/3dd3e/config.png&quot;
+        srcset=&quot;/blog/static/28fbd1720d1b4bf6baaab7665a637d77/c26ae/config.png 158w,
+/blog/static/28fbd1720d1b4bf6baaab7665a637d77/6bdcf/config.png 315w,
+/blog/static/28fbd1720d1b4bf6baaab7665a637d77/3dd3e/config.png 595w&quot;
+        sizes=&quot;(max-width: 595px) 100vw, 595px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;config&lt;/code&gt;는 &lt;code class=&quot;language-text&quot;&gt;swr&lt;/code&gt;에 사용되는 옵션 값들과 &lt;code class=&quot;language-text&quot;&gt;cache&lt;/code&gt;를 담고 있으며 &lt;code class=&quot;language-text&quot;&gt;useSwr&lt;/code&gt;에 제공합니다.&lt;/p&gt;
 &lt;p&gt;우선 &lt;code class=&quot;language-text&quot;&gt;config&lt;/code&gt;의 구성은 이미 선언된 &lt;code class=&quot;language-text&quot;&gt;defaultConfig&lt;/code&gt;와 선택적으로 지정하여 사용할 수 있는 상위 &lt;code class=&quot;language-text&quot;&gt;SWRConfigContext&lt;/code&gt;에서 상속받은 값을 병합하여 최종적으로 형성됩니다.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;tsx&quot;&gt;&lt;pre class=&quot;language-tsx&quot;&gt;&lt;code class=&quot;language-tsx&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;// config.ts&lt;/span&gt;
@@ -118,13 +209,75 @@
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3&gt;useSwr&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&quot;https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/324e81dc-6d30-401a-8287-d3323352e539/useswr.png&quot; alt=&quot;useswr.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 610px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/blog/static/fe1f92b5ce515adeb294b0341ba15915/5aae9/useSwr.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 47.46835443037975%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAJCAYAAAAywQxIAAAACXBIWXMAAAsTAAALEwEAmpwYAAABXUlEQVR42o2SzU7DMBCE8wKx1/+O47RpQlsqaC7Ahfd/r2Ft0yJVIHEY2ZHXn2dn0yml8Ku0hk2uKXuoQSOtGaftjOP1jOWywiTbzqOFGRyMM+huAM2AO4wIdmwwZRkcHJbjgumwgzAS0hLI8h1vmlxZNdwuNCAxQIgeUkp21r4LUCkNkoSYI64fW3VXAEqWR9vDTbznOssuOyKJNI54eb0ipVShRhvYyVe3tSXe9+VBrnW8NwVaQA8xGa7tJJNTdHheMqaccTydsW0bDpcFshcwwdZWigttSq6+dSGoui+qcF4NZ9mNnjAHgaAF1qHHfgyY5wVvn+/srAVdHPo1Ip5ThZvbEAbbFLiGVzdzhodBQpBGz/Ic9tPEBz7ykFS9VAptmWZ2td0qhjb5qjrA8gBH0e0jh25bHlMgjE5yXnSf9j18+dPio9R322WYndGENUmcRoHM7eu//st/6gtT6N+7m38GjgAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;useSwr.png&quot;
+        title=&quot;&quot;
+        src=&quot;/blog/static/fe1f92b5ce515adeb294b0341ba15915/5aae9/useSwr.png&quot;
+        srcset=&quot;/blog/static/fe1f92b5ce515adeb294b0341ba15915/c26ae/useSwr.png 158w,
+/blog/static/fe1f92b5ce515adeb294b0341ba15915/6bdcf/useSwr.png 315w,
+/blog/static/fe1f92b5ce515adeb294b0341ba15915/5aae9/useSwr.png 610w&quot;
+        sizes=&quot;(max-width: 610px) 100vw, 610px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
 &lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;useSwr&lt;/code&gt;은 컴포넌트 영역에서 직접 사용되는 &lt;code class=&quot;language-text&quot;&gt;hook&lt;/code&gt;입니다. 데이터를 패칭하고 &lt;code class=&quot;language-text&quot;&gt;state&lt;/code&gt;를 관리하며 필요에 따라 데이터를 재검증합니다.
 &lt;code class=&quot;language-text&quot;&gt;config&lt;/code&gt;의 &lt;code class=&quot;language-text&quot;&gt;cache&lt;/code&gt;와 옵션 값을 전달받아 컴포넌트에 이용될 &lt;code class=&quot;language-text&quot;&gt;state&lt;/code&gt;를 관리합니다.&lt;/p&gt;
 &lt;h2&gt;실행 과정&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&quot;https://prod-files-secure.s3.us-west-2.amazonaws.com/c0fc1a43-1127-4384-85d1-5fff37e02f46/0ed2d3a6-64db-4339-97c5-1e243b1b3c2d/%E1%84%92%E1%85%B3%E1%84%85%E1%85%B3%E1%86%B7%E1%84%83%E1%85%A9.png&quot; alt=&quot;흐름도.png&quot;&gt;&lt;/p&gt;
-&lt;h3&gt;초기 실행&lt;/h3&gt;
-&lt;p&gt;프로젝트 초기 실행시 &lt;code class=&quot;language-text&quot;&gt;defaultConfig&lt;/code&gt;가 기본으로 사용됩니다. 물론 상위 컴포넌트에 &lt;code class=&quot;language-text&quot;&gt;SWRConfig&lt;/code&gt;를 통해서 하위 컴포넌트의 &lt;code class=&quot;language-text&quot;&gt;useSwr&lt;/code&gt;에 제공할수 있지만 &lt;code class=&quot;language-text&quot;&gt;SWRConfig&lt;/code&gt;를 사용하지 않는 것을 가정으로 설명하겠습니다.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3&gt;초기 캐시 전달과정&lt;/h3&gt;
+&lt;p&gt;&lt;span
+      class=&quot;gatsby-resp-image-wrapper&quot;
+      style=&quot;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 630px; &quot;
+    &gt;
+      &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;/blog/static/a63bdf16802de38a2588ebc958fcec13/d38ac/flow.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+    &lt;span
+    class=&quot;gatsby-resp-image-background-image&quot;
+    style=&quot;padding-bottom: 60.75949367088608%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAMCAYAAABiDJ37AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR42o2T23LCMAxE+QAgji1fcyOQgT70/39P3Q0mwzC05UHj2JbWZ+V417atvobhaIwGEf2+3fRrWXQeR7VY2/Z/id07MW+tdimtIsfDQQ/7vfal6PV00uy9Oux/JEixBCqpgtfzWbuctXSdXqZpDVIz52PCSEHnNCBou4dwB7qx73WGYKqEzDO1Bf8TQoyFLKJ9i3VaHUA7QJxrHjnmL0L7NLLwBCKKs6ip5JxPsF9i3ABeKTfBY9OosAgWEwrYK9ouICNdqvMgXnscZkFJ6yEEQOCSTBU0+HC21WkcNMYAwXw/uW3XAqmFUq0b5OY+q0TBWPRyWzRkEAvcidWdtwb9gs2SdBo69K/aQKw9ghDnj7AeB3iQd1nnZdZ+GrRhvq2CwRn1PuiIf474nCeQCqzRPu1xPaINGfSkMY1ZRx9w4+JWIVq2rgoKelR4eygksTCJFms49G6LeP8HSfq4kBdBvAyKQojinL99jk+WKUDbkv0a1t8pufcDPPong8lrXT8AAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;
+  &gt;&lt;/span&gt;
+  &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        alt=&quot;flow.png&quot;
+        title=&quot;&quot;
+        src=&quot;/blog/static/a63bdf16802de38a2588ebc958fcec13/f058b/flow.png&quot;
+        srcset=&quot;/blog/static/a63bdf16802de38a2588ebc958fcec13/c26ae/flow.png 158w,
+/blog/static/a63bdf16802de38a2588ebc958fcec13/6bdcf/flow.png 315w,
+/blog/static/a63bdf16802de38a2588ebc958fcec13/f058b/flow.png 630w,
+/blog/static/a63bdf16802de38a2588ebc958fcec13/40601/flow.png 945w,
+/blog/static/a63bdf16802de38a2588ebc958fcec13/78612/flow.png 1260w,
+/blog/static/a63bdf16802de38a2588ebc958fcec13/d38ac/flow.png 1744w&quot;
+        sizes=&quot;(max-width: 630px) 100vw, 630px&quot;
+        style=&quot;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&quot;
+        loading=&quot;lazy&quot;
+        decoding=&quot;async&quot;
+      /&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;
+프로젝트 초기 실행시 &lt;code class=&quot;language-text&quot;&gt;defaultConfig&lt;/code&gt;가 기본으로 사용됩니다. 물론 상위 컴포넌트에 &lt;code class=&quot;language-text&quot;&gt;SWRConfig&lt;/code&gt;를 통해서 하위 컴포넌트의 &lt;code class=&quot;language-text&quot;&gt;useSwr&lt;/code&gt;에 제공할수 있지만 &lt;code class=&quot;language-text&quot;&gt;SWRConfig&lt;/code&gt;를 사용하지 않는 것을 가정으로 설명하겠습니다.&lt;/p&gt;
 &lt;p&gt;먼저 &lt;code class=&quot;language-text&quot;&gt;initCache&lt;/code&gt;를 호출을 통해 초기 &lt;code class=&quot;language-text&quot;&gt;cache&lt;/code&gt;를 반환합니다. 여기서 초기 &lt;code class=&quot;language-text&quot;&gt;cache&lt;/code&gt;는 맵 인스턴스로 &lt;code class=&quot;language-text&quot;&gt;initCache&lt;/code&gt;의 인자로 호출됩니다. 인자로 받은 &lt;code class=&quot;language-text&quot;&gt;provider&lt;/code&gt;를 &lt;code class=&quot;language-text&quot;&gt;SWRGlobalState&lt;/code&gt;에 &lt;code class=&quot;language-text&quot;&gt;GlobalState&lt;/code&gt;의 초기 값으로 맵핑하여 형성 합니다.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;tsx&quot;&gt;&lt;pre class=&quot;language-tsx&quot;&gt;&lt;code class=&quot;language-tsx&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;// cache.ts&lt;/span&gt;
 
@@ -351,7 +504,7 @@
 &lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; useSWR &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token generic-function&quot;&gt;&lt;span class=&quot;token function&quot;&gt;withArgs&lt;/span&gt;&lt;span class=&quot;token generic class-name&quot;&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;SWRHook&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;useSWRHandler&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
 
 &lt;span class=&quot;token keyword&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;default&lt;/span&gt; useSWR&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h3&gt;상위 Config 전달&lt;/h3&gt;
+&lt;h3&gt;상위 Config 전달과정&lt;/h3&gt;
 &lt;p&gt;만약 상위에 &lt;code class=&quot;language-text&quot;&gt;SWRConfig&lt;/code&gt;를 이용하게 되면 전역적으로 &lt;code class=&quot;language-text&quot;&gt;config&lt;/code&gt;를 제공할수 있습니다.&lt;/p&gt;
 &lt;p&gt;상위 &lt;code class=&quot;language-text&quot;&gt;context&lt;/code&gt;를 통해 전달받은 &lt;code class=&quot;language-text&quot;&gt;SwrConfigContext&lt;/code&gt;를 &lt;code class=&quot;language-text&quot;&gt;useSwrConfig&lt;/code&gt;에서 &lt;code class=&quot;language-text&quot;&gt;SwrConfigContext&lt;/code&gt;를 우선순위로 &lt;code class=&quot;language-text&quot;&gt;defaultConfig&lt;/code&gt;와 병합합니다. 새로 병합된 &lt;code class=&quot;language-text&quot;&gt;config&lt;/code&gt;는 이전에 설명한 방식과 같은 방법으로 &lt;code class=&quot;language-text&quot;&gt;withArgs&lt;/code&gt;를 통해 최종적으로 &lt;code class=&quot;language-text&quot;&gt;useSwr&lt;/code&gt;에 전달됩니다.&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;tsx&quot;&gt;&lt;pre class=&quot;language-tsx&quot;&gt;&lt;code class=&quot;language-tsx&quot;&gt;&lt;span class=&quot;token comment&quot;&gt;// use-swr-config.ts&lt;/span&gt;
@@ -392,7 +545,7 @@
   &lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h2&gt;정리&lt;/h2&gt;
+&lt;h2&gt;마치며&lt;/h2&gt;
 &lt;p&gt;최근에 swr 라이브러리를 파악해보고자 직접 기본적인구조만 구현해봤고, 이를 토대로 학습한 내용을 정리해봤습니다.&lt;/p&gt;
 &lt;p&gt;보통 라이브러리를 적용하고 내부 개념을 학습하는데서 끝났는데, 이번 기회에 내부 구조를 파악하면서 어떤 방식으로 개발하는지도 조금은 이해할 수 있었습니다.&lt;/p&gt;
 &lt;p&gt;과정자체는 굉장히 힘들고 오래걸렸지만 그만큼 더 많은 것 을 배울수 있었던 것 같습니다.&lt;/p&gt;</content:encoded></item></channel></rss>
