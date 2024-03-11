@@ -7,7 +7,7 @@ description: 'swr라이브러리 코드를 구현해보면서 학습한 내용�
 swr라이브러리 코드를 구현해보면서 학습한 내용을 글로 정리했습니다. 이 글은 swr라이브러리의 사용법 보다는 내부를 파악한 내용으로 구성되어 있습니다. swr내부에는 크게 어떤 요소들로 이루어져 있고, 또 어떤 흐름으로 활용되는지 설명하겠습니다.
 
 ## SWR 주요 요소들
-
+---
 앞으로 설명드릴 주요 요소들의 코드 디렉토리는 다음과 같이 있습니다.
 
 ```
@@ -156,11 +156,9 @@ const SWRConfig: FC<
 `config`의 `cache`와 옵션 값을 전달받아 컴포넌트에 이용될 `state`를 관리합니다.
 
 ## 실행 과정
-
-![flow.png](./flow.png)
-
+---
 ### 초기 캐시 전달과정
-
+![flow.png](./flow.png)
 프로젝트 초기 실행시 `defaultConfig`가 기본으로 사용됩니다. 물론 상위 컴포넌트에 `SWRConfig`를 통해서 하위 컴포넌트의 `useSwr`에 제공할수 있지만 `SWRConfig`를 사용하지 않는 것을 가정으로 설명하겠습니다.
 
 먼저 `initCache`를 호출을 통해 초기 `cache`를 반환합니다. 여기서 초기 `cache`는 맵 인스턴스로 `initCache`의 인자로 호출됩니다. 인자로 받은 `provider`를 `SWRGlobalState`에 `GlobalState`의 초기 값으로 맵핑하여 형성 합니다.
