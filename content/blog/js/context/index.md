@@ -57,7 +57,98 @@ VariableEnvironment, LexicalEnvironment 모두 environmentRecord, outerEnvironme
 
 # LexicalEnvironment
 
+단어적으로는 사전적 환경이라는 의미인데, 컨텍스트 내부의 식별자와 참조하는 외부 정보로 구성되어 있는 환경으로 해석하면될 것 같습니다.
+
 ## environmentRecord와 호이스팅
+
+environmentRecord에는 현재 컨텍스트와 관련된 코드의 식별자 정보들이 저장됩니다. 식별자 정보로는 선언한 함수, var로 선언된 변수,함수에 지정된 매개변수 식별자 등이 있으며, 컨텍스트 내부를 훑어 나가며 순서대로 수집합니다.
+
+코드 실행전에 변수정보들을 미리 저장하는데, 이때 미리 저장하므로 변수 정보들을 상위로 올려놓아도 실제 실행과정과 해석이 같게 됩니다. 이러한 현상을 호이스팅이라고 하며 실제로는 끌어올리지 않지만 해석의 편의를 위해 이렇게 간주하여 해석합니다.
+
+### 호이스팅 과정
+
+원본 코드
+
+```
+function a(x) {
+  console.log(x);
+  var x;
+  console.log(x);
+  var x = 2;
+  console.log(x);
+}
+
+a(1);
+```
+
+environmentRecord는 할당은 관여하지 않고 오직 어떤 식별자가 있는지에만 관심이 있어 변수명만 끌어올린다고 생각하면 됩니다.
+
+호이스팅이 적용된 코드
+
+```
+function a() {
+  var x; // 매개변수 x
+  var x;
+  var x;
+
+  x = 1; // 매개변수 x 할당과정
+
+  console.log(x);
+  console.log(x);
+
+  x = 2;
+  console.log(x);
+}
+
+a(1);
+```
+
+코드 실행 과정은
+
+- 변수 x를 선언하면, 식별자를 x로 하는 변수영역의 메모리 공간을 확보하여 저장합니다.
+- 그 다음 변수 x선언은 이미 x가 선언되어 있으므로 무시합니다.
+- 1이라는 값을 데이터영역의 메모리 공간에 저장하고 이 주소값을 변수 x에 저장합니다.
+- x의 값 1을 출력합니다.
+- 2라는 값을 데이터영역의 메모리 공간에 저장하고 이 주소값을 변수 x에 저장합니다.
+- 이제 x는 2라는 값을 바라보기 때문에 2를 출력하며 실행 컨텍스트가 콜 스택에서 제거되며 종료됩니다.
+
+### 함수 선언의 호이스팅
+
+```
+function a() {
+  console.log(b);
+  var b = 'bbb';
+  console.log(b);
+
+  function b() { };
+
+  console.log(b);
+}
+
+a();
+```
+
+호이스팅이 적용된 코드
+
+```
+function a() {
+  var b;
+  function b() {};
+
+  console.log(b);
+  b = 'bbb';
+  console.log(b);
+  console.log(b);
+}
+
+a();
+```
+
+똑같이 변수b가 올라가게 되고 추가로 함수 선언문도 저장되므로 올라가게 됩니다.
+또 function b() {}; 부분은 var b = function b() {} 처럼 변수b에 할당된것으로 간주할수 있습니다.
+
+위에 코드 실행과정과 같으며 다른 부분은 함수 선언부 입니다.
+전에 선언된 변수b가 있으므로 선언과정은 무시하며 함수는 별도의 메모리영역에 저장되며 b는 함수b를 가리킵니다.
 
 ## 스코프 체인, outerEnvironmentReference
 
