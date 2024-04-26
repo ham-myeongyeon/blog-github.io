@@ -51,6 +51,10 @@ console.log(a);
 
 # VariableEnvironment
 
+VariableEnvironment, LexicalEnvironment 모두 environmentRecord, outerEnvironment로 구성되어 있으며 초기화 과정에 담기는 내용은 같습니다.
+차이점은 VariableEnvironment은 실행 컨텍스트를 생성할 때 스냅샷을 유지하는 점입니다.
+생성 과정은 먼저 VariableEnvironment에서 정보를 먼저 담은 다음에 복사하여 LexicalEnvironment를 만들며 이후에는 주로 LexicalEnvironment를 활용합니다.
+
 # LexicalEnvironment
 
 ## environmentRecord와 호이스팅
