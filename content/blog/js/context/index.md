@@ -192,6 +192,44 @@ multiply = function (a, b) {
 
 실제 코드를 구현할때는 되도록 선언문보다는 표현식이 더 낫습니다. 왜냐하면 선언문은 호이스팅 되고 표현식은 호이스팅 되지 않아, 표현식이 작성된 코드 아래줄에만 영향을 주기 때문에 선언문과 달리 윗줄에 영향을 주지않아 오류가 발생하지 않습니다.
 
-## 스코프 체인, outerEnvironmentReference
+## 스코프, 스코프 체인, outerEnvironmentReference
+
+스코프는 식별자에 대한 유효범위로 함수를 기준으로 생성됩니다. 그리고 이러한 유효범위를 안에서 부터 바깥으로 차례로 검색해나가는 것을 스코프 체인이라고 합니다. 이 스코프체인을 가능하게 해주는 것이 LexicalEnvironment의 outerEnvironmentReference입니다.
+
+```
+var a = 1;
+
+var outer = function () {
+  var inner = function () {
+    console.log(a); // undefined
+    var a = 3;
+  };
+
+  inner();
+  console.log(a); // 1
+};
+
+outer();
+console.log(a); // 1
+```
+
+위 코드를 컨텍스트 관점으로 실행과정을 설명하면 다음과 같습니다.
+
+- 전역 컨텍스트가 활성화 되고, environmentRecord에 식별자 a, 함수 outer가 담깁니다. 전역 컨텍스트에는 선언시점이 없어 outerEnvironmentReference는 저장하지 않습니다.
+- a에 1을, outer에 함수를 할당합니다.
+- outer함수 호출부를 만나면, 전역 컨텍스트에 대한 코드 실행은 일시 중단되고 outer에 대한 실행 컨텍스트가 생성되고 콜 스택 최상단에 담기며 활성화 됩니다.
+- outer 컨텍스트의 environmentRecord에 식별자 inner가 담깁니다.
+- outer 컨텍스트의 outerEnvironmentReference에는 outer함수가 선언될 시점의 LexicalEnvironment가 담기며 전역 공간에서 선언됐으므로 전역 컨텍스트의 LexicalEnvironment를 참조 복사합니다.
+- inner에 함수를 할당 합니다.
+- inner함수 호출부를 만나면 outer컨텍스트의 코드를 일시중단 하며 inner컨텍스트가 생성되고 활성화 됩니다.
+- inner실행 컨텍스트의 environmentRecord에는 식별자a를 저장합니다.
+- inner실행 컨텍스트의 outerEnvironmentReference는 inner함수가 선언될 시점의 LexicalEnvironment가 담기며, outer함수 내부에서 선언됐으므로 outer함수의 LexicalEnvironment가 참조복사됩니다.
+- console.log(a); 출력 부분에서 inner컨텍스트의 environmentRecord에서 선언한 변수는 있지만 값은 없으므로 undefined를 출력합니다.
+- a에 3을 할당하며 inner컨텍스트가 종료됩니다.
+- 다시 outer컨텍스트에서 일시중단되었던 console.log(a) 부분부터 활성화 됩니다. outer컨텍스트의 environmentRecord에 a가 없으므로 outerEnvironmentReference를 찾으며 전역 LexicalEnvironment에 a에 할당된 값 1을 출력합니다.
+- outer컨텍스트가 종료되며 다시 전역 컨텍스트에서 일시중단되었던 부분 console.log(a)을 실행합니다.
+- 전역 컨텍스트 environmentRecord의 a에 접근하며 저장되어 있는 값 1을 출력하며 종료됩니다.
+
+위와 같은 스코프 체인의 순서로 바깥에서 내부의 변수에는 접근하지 못하게 됩니다.
 
 # this
