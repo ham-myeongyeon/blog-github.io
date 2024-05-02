@@ -98,7 +98,36 @@ obj.outer();
 
 ## 콜백 함수 호출할 때, 그 함수 내부에서의 this
 
+```
+setTimeout(function () {
+  console.log(this);
+}, 300);
+
+[1, 2, 3, 4].forEach(function (x) {
+  console.log(this, x);
+});
+
+document.body.innerHTML += `<button id='a'>클릭</button>`;
+document.body.querySelector("#a").addEventListener("click", function (e) {
+  console.log(this, e);
+});
+```
+
+콜백함수의 종류에 따라 this가 어떻게 사용될지 결정됩니다. 위에 두함수는 일반함수처럼 호출되어 window가 출력되며, 이벤트리스너는 콜백함수를 호출할 때 자신의this를 상속하도록 되어 있어 .앞에 부분 button이 this로 출력됩니다.
+
 ## 생성자 함수 내부에서의 this
+
+```
+var Cat = function (name, age) {
+  this.bark = '야옹';
+  this.name = name;
+  this.age = age;
+};
+
+var moca = new Cat('모카', 1);
+```
+
+생성자 함수는 공통된 성질을 가진 객체를 생성하는 함수 입니다. 호출시 함수 앞에 new를 붙여 호출하면 해당 함수가 생성자로서 동작하며 여기서 내부의 this는 새로 만들 인스턴스가 됩니다.
 
 # this를 바인딩하기
 
