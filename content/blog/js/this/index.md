@@ -129,13 +129,156 @@ var moca = new Cat('모카', 1);
 
 생성자 함수는 공통된 성질을 가진 객체를 생성하는 함수 입니다. 호출시 함수 앞에 new를 붙여 호출하면 해당 함수가 생성자로서 동작하며 여기서 내부의 this는 새로 만들 인스턴스가 됩니다.
 
-# this를 바인딩하기
+# 명시적으로 this를 바인딩하기
 
 ## call 메서드
 
+call메서드는 함수내부에 this를 명시적으로 지정할 수 있습니다. call은 호출함수를 즉시 실행하도록 합니다. 첫번째 인자는 this를 명시하고, 두번째 인자부터는 호출할 함수의 인자로 들어가게 됩니다.
+
+```
+var func = function (a, b, c) {
+  console.log(this, a, b, c);
+};
+
+func(1, 2, 3);  // window, 1, 2, 3
+func.call({ x: 1 }, 4, 5, 6);  // { x : 1 }, 4, 5, 6
+```
+
 ## apply 메서드
 
+apply도 call 메서드처럼 this를 명시하는 방법으로, 첫번째 인자로 this를 받으며 두번째 인자는 배열로 호출할 함수의 인자로 요소로 들어가게 됩니다.
+
+```
+var func = function (a, b, c) {
+  console.log(this, a, b, c);
+};
+
+func(1, 2, 3);  // window, 1, 2, 3
+func.apply({ x: 1 }, [4, 5, 6]);  // { x : 1 }, 4, 5, 6
+
+```
+
 ## call/apply 메서드 활용
+
+### 유사배열객체(array-like object)에 배열메서드 적용
+
+```
+var obj = {
+  0: "a",
+  1: "b",
+  2: "c",
+  length: 3,
+};
+
+Array.prototype.push.call(obj, "d");
+console.log(obj); // { "0": "a", "1": "b", "2": "c", "3": "d", "length": 4 }
+
+var arr = Array.prototype.slice.call(obj);
+console.log(arr); // [ "a", "b", "c", "d" ]
+```
+
+유사배열객체는 키가 양의 정수인 프로퍼티와 length프로퍼티의 값이 있는 배열구조와 유사한 객체를 말합니다.
+여기서 유사배열객체는 배열의 메서드를 사용하지 못하는데, call이나 apply메서드를 이용해 배열로서 사용이 가능하게 됩니다.
+
+```
+function a() {
+  var argv = Array.prototype.slice.call(arguments);
+
+  argv.forEach(function (arg) {
+    console.log(arg);
+  });
+}
+
+a(1, 2, 3);
+
+document.body.innerHTML = `<div>a</div><div>b</div<div>c</div>`;
+
+var nodeList = document.querySelectorAll("div");
+var nodeArr = Array.prototype.slice.call(nodeList);
+
+nodeArr.forEach(function (node) {
+  console.log(node);
+});
+```
+
+arguments, nodeList등 모두 유사 배열객체입니다. slice.call 메서드를 통해서 배열로 복사한 후에 배열로서 사용이 가능하게 됩니다.
+
+```
+var str = "abc def";
+
+Array.prototype.push.call(str, "pushed string"); // 에러 발생
+
+console.log(Array.prototype.concat.call(str, "string"));
+<!-- [
+    "abc def",
+    "string"
+] -->
+```
+
+문자열의 경우 length가 읽기전용 프로퍼티이므로 push와 같이 변경을 가하면 에러가 발생합니다. concat의 경우 새로운 배열을 반환하므로 에러는 발생하지 않지만 원한는 값이 안나오게됩니다.
+따라서 call/apply메서든는 본래 목적인 this를 지정하는 방법으로 사용하고, ES6문법이전에 유사배열객체등을 복사하기위해 사용하는 방법정도로 slice.call메서드를 활용하면 됩니다.
+
+ES6부터는 유사배열객체 또는 순회가능한 종류의 데이터 타입을 배열로 전환하는 Array.from메서드가 도입됐으니 이를 활용하면 될 것 같습니다.
+
+```
+var obj = {
+  0: "a",
+  1: "b",
+  2: "c",
+  length: 3,
+};
+
+var arr = Array.from(obj);
+console.log(arr); // [ 'a', 'b', 'c' ]
+```
+
+### 생성자 내부에서 다른 생성자 호출
+
+```
+function Person(name, gender) {
+  this.name = name;
+  this.gender = gender;
+}
+
+function Student(name, gender, school) {
+  Person.call(this, name, gender);
+  this.school = school;
+}
+
+function Employee(name, gender, company) {
+  Person.call(this, name, gender);
+  this.company = company;
+}
+
+var mj = new Student('명진', 'male', '서강대');
+var musk = new Employee('머스크', 'male', '테슬라');
+
+```
+
+이렇게 하여 공통적인 속성을 Person.call을 통해 호출하여, 인스턴스로 만들어질 this를 Person의 속성을 추가하여 코드의 반복을 줄일수 있습니다.
+
+### 여러 인수를 묶어서 하나의 배열로 전달하고 싶을때 (apply)
+
+```
+var numbers = [10, 20, 3, 16];
+
+var max = Math.max.apply(null, numbers);
+var min = Math.min.apply(null, numbers);
+
+console.log(max, min);
+```
+
+numbers의 배열을 펼쳐야 하지만 apply를 통해서 배열 자체로 넘길수 있게 됩니다.
+ES6부터는 스프레드 연산자로 간단하게 전달할 수 있습니다.
+
+```
+var numbers = [10, 20, 3, 16];
+
+var max = Math.max(...numbers);
+var min = Math.min(...numbers);
+
+console.log(max, min);
+```
 
 ## bind 메서드
 
