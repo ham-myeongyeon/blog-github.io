@@ -282,6 +282,78 @@ console.log(max, min);
 
 ## bind 메서드
 
+bind는 ES5에서 추가된 기능으로, call과 비슷하지만 함수를 호출하지 않고 넘겨 받은 this를 바탕으로 새로운 함수를 반환합니다. 새로운 bind된 함수에 인자를 넘기면 인수들이 뒤이어 등록되어 사용됩니다.
+
+```
+var func = function (a, b, c, d) {
+  console.log(this, a, b, c, d);
+};
+
+func(1, 2, 3, 4); // window, 1, 2, 3, 4
+
+var bindFunc = func.bind({ x: 1 });
+
+bindFunc(1, 2, 3, 4); // { x: 1 }, 1, 2, 3, 4
+
+
+var bindFunc2 = func.bind({ x: 2 }, 4, 5);
+
+bindFunc2(6, 7); // { x: 2 }, 4, 5, 6, 7
+```
+
+bindFunc2 함수처럼 this뿐만 아니라 뒤에 매개변수도 같이 전달하여 사용가능합니다.
+
+### name 프로퍼티
+
+bind 메서드를 통해서 만들어진 함수는 name프로퍼티 앞에 bound가 붙어서 나오게 됩니다.
+
+```
+var func = function (a, b, c, d) {
+  console.log(this, a, b, c, d);
+};
+
+var bindFunc = func.bind({ x: 1 }, 4, 5);
+
+console.log(func.name); // func
+console.log(bindFunc.name); // bound func
+```
+
+### 상위 컨텍스트의 this를 내부함수나 콜백함수에 전달하기
+
+```
+var obj = {
+  outer: function () {
+    console.log(this);
+
+    var innerFunc = function () {
+      console.log(this);
+    };
+
+    innerFunc.call(this);
+  },
+};
+
+obj.outer();
+```
+
+```
+var obj = {
+  outer: function () {
+    console.log(this);
+
+    var innerFunc = function () {
+      console.log(this);
+    }.bind(this);
+
+    innerFunc();
+  }
+}
+
+obj.outer();
+```
+
+위 두 코드처럼 innerFunc 일반함수를 상위 컨텍스트의this에 바인딩하여 호출할 수 있습니다.
+
 ## 화살표 함수에서 예외사항
 
 ## 별도의 인자로 this를 받는 경우
