@@ -354,6 +354,72 @@ obj.outer();
 
 위 두 코드처럼 innerFunc 일반함수를 상위 컨텍스트의this에 바인딩하여 호출할 수 있습니다.
 
+```
+var obj = {
+  logThis: function () {
+    console.log(this);
+  },
+  logThisLater1: function () {
+    setTimeout(this.logThis, 500);
+  },
+  logThisLater2: function () {
+    setTimeout(this.logThis.bind(this), 1000);
+  },
+};
+
+obj.logThisLater1(); // window
+obj.logThisLater2(); // obj
+```
+
+여기서는 setTimeout으로 호출할 때 호출했던 함수와는 다른 실행 맥락에서 호출되며 this를 지정하지 않으면 window를 가리키게 됩니다.
+bind를 통하여 명시적으로 obj로 지정할수 있습니다.
+
 ## 화살표 함수에서 예외사항
 
+ES6에서 도입된 화살표 함수는 this 바인딩 하는 과정이 제외되어, 접근하려면 상위 컨텍스트의 this를 참고하게 됩니다.
+
+```
+var obj = {
+  outer: function () {
+    console.log(this); // obj
+
+    var innerFunc = () => {
+      console.log(this); // 상위, obj
+    };
+
+    innerFunc();
+  }
+}
+
+obj.outer();
+```
+
 ## 별도의 인자로 this를 받는 경우
+
+콜백함수를 받는 함수중에 this로 지정할 객체를 인자로 지정할 수 있는 경우가 있으며 보통 배열 메서드에 많이 있습니다.
+
+Array.prototype.forEach(callback[, thisArg])
+
+```
+var report = {
+  sum: 0,
+  count: 0,
+  add: function () {
+    var args = Array.prototype.slice.call(arguments);
+
+    args.forEach(function (entry) {
+      this.sum += entry;
+      ++this.count;
+    }, this);
+  },
+  average: function () {
+    return this.sum / this.count;
+  },
+};
+
+report.add(60, 85, 95);
+console.log(report.sum, report.count, report.average());
+```
+
+위 코드를 보면 report.add호출시 this는 report메서드로 report가 바인딩 됩니다. forEach메서드에 this가 들어가는데 이 this는 바인딩된 report이며 report의 sum과 count를 변경합니다.
+다시 report.average()를 호출하면 바뀐 sum, count값을 가지고 처리하게 됩니다.
