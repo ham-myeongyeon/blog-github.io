@@ -71,6 +71,24 @@ this에 대한 제어권도 call/apply등을 통해서 this를 명시적으로 �
 
 # 콜백 함수는 함수다
 
+```jsx
+var obj = {
+  vals: [1, , 2, 3],
+  logValues: function (value, index) {
+    console.log(this, value, index)
+  },
+}
+
+obj.logValues(1, 2)
+;[4, 5, 6].forEach(obj.logValues)
+```
+
+logValues는 메서드로서 호출되므로 첫번째 호출에서는 obj를 this로 바인딩 하지만, 두번째 호출 forEach의 콜백함수로 호출될 때는 window를 출력합니다.
+
+이는 obj.logValues라는 메서드로 전달한것 이 아닌, obj.logValues가 가리키는 함수만 전달한것이기 때문입니다.
+
+객체의 메서드를 콜백함수로 전달하더라도 함수로서 전달됩니다.
+
 # 콜백 함수 내부의 this에 다른 값 바인딩하기
 
 # 콜백 지옥과 비동기 제어
