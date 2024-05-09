@@ -91,4 +91,224 @@ logValues는 메서드로서 호출되므로 첫번째 호출에서는 obj를 th
 
 # 콜백 함수 내부의 this에 다른 값 바인딩하기
 
+---
+
+콜백함수로 객체 메서드를 전달하면 this가 바인딩 되지 않습니다. 바인딩이 되게 하려면 전통적인 방식들이 있지만 bind를 이용해서 해결할 수 있습니다.
+
+```jsx
+var obj1 = {
+  name: 'obj1',
+  logName: function () {
+    console.log(this.name)
+  },
+}
+
+var callback = obj1.logName.bind(obj1)
+
+setTimeout(callback, 1000)
+```
+
 # 콜백 지옥과 비동기 제어
+
+---
+
+콜백함수가 중첩하여 사용하면서, 들여쓰기가 이해하기 어려울정도로 깊어지는 현상을 콜백지옥이라고 합니다.
+
+이러면 가독성이 많이 떨어져 코드의 이해와 수정이 어려워지게 됩니다.
+
+> 콜백지옥 코드
+
+```jsx
+setTimeout(
+  function (name) {
+    var coffeeList = name
+    console.log(coffeeList)
+
+    setTimeout(
+      function (name) {
+        coffeeList += ', ' + name
+        console.log(coffeeList)
+
+        setTimeout(
+          function (name) {
+            coffeeList += ', ' + name
+            console.log(coffeeList)
+
+            setTimeout(
+              function (name) {
+                coffeeList += ', ' + name
+                console.log(coffeeList)
+              },
+              500,
+              '카페라떼',
+            )
+          },
+          500,
+          '카페모카',
+        )
+      },
+      500,
+      '아메리카노',
+    )
+  },
+  500,
+  '에스프레소',
+)
+```
+
+> 해결방법 - 기명합수로 전환
+
+익명함수들을 기명함수로 전환해서 호출하는 방법입니다.
+
+```jsx
+var coffeeList = ''
+
+var addEspresso = function (name) {
+  coffeeList = name
+  console.log(coffeeList)
+  setTimeout(addAmericano, 500, '아메리카노')
+}
+
+var addAmericano = function (name) {
+  coffeeList += ', ' + name
+  console.log(coffeeList)
+  setTimeout(addMocha, 500, '카페모카')
+}
+
+var addMocha = function (name) {
+  coffeeList += ', ' + name
+  console.log(coffeeList)
+  setTimeout(addMocha, 500, '카페라떼')
+}
+
+var addLatte = function (name) {
+  coffeeList += ', ' + name
+  console.log(coffeeList)
+  setTimeout(addMocha, 500, '카페라떼')
+}
+
+setTimeout(addEspresso, 500, '에스프레소')
+```
+
+> Promise 이용하기
+
+ES6에 도입된 Promise를 이용한 방식이며 resolve를 통해서 다음 구문 then으로 넘어갈 수 있습니다.
+
+그래서 비동기 처리를 가능하게 합니다.
+
+```jsx
+new Promise(function (resolve) {
+  setTimeout(function () {
+    var name = '에스프레소'
+    console.log(name)
+    resolve(name)
+  }, 500)
+})
+  .then(function (prevName) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var name = prevName + ', 아메리카노'
+        console.log(name)
+        resolve(name)
+      }, 500)
+    })
+  })
+  .then(function (prevName) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var name = prevName + ', 카페모카'
+        console.log(name)
+        resolve(name)
+      }, 500)
+    })
+  })
+  .then(function (prevName) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var name = prevName + ', 카페라떼'
+        console.log(name)
+        resolve(name)
+      }, 500)
+    })
+  })
+```
+
+```jsx
+var addCoffee = function (name) {
+  return function (prevName) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var newName = preName ? prevName + ', ' + name : name
+        console.log(newName)
+        resolve(newName)
+      }, 500)
+    })
+  }
+}
+
+addCoffee('에스프레소')()
+  .then(addCoffee('아메리카노'))
+  .then(addCoffee('카페모카'))
+  .then(addCoffee('카페라떼'))
+```
+
+> Generator 이용하기
+
+```jsx
+var addCoffee = function (prevName, name) {
+  setTimeout(function () {
+    coffeeMaker.next(prevName ? prevName + ', ' + name : name)
+  }, 500)
+}
+
+var cofeeGenerator = function* () {
+  var espresso = yield addCoffee('', '에스프레소')
+  console.log(espresso)
+
+  var americano = yield addCoffee(espresso, '아메리카노')
+  console.log(americano)
+
+  var mocha = yield addCoffee(americano, '카페모카')
+  console.log(mocha)
+
+  var latte = yield addCoffee(mocha, '카페라떼')
+  console.log(latte)
+}
+
+var coffeeMaker = cofeeGenerator()
+coffeeMaker.next()
+```
+
+> async/await
+
+```jsx
+var addCoffee = function (name) {
+  return new Promise(function (resolve) {
+    setTimeout(function () {
+      resolve(name)
+    }, 500)
+  })
+}
+
+var coffeeMaker = async function () {
+  var coffeeList = ''
+
+  var _addCoffee = async function (name) {
+    coffeeList += (coffeeList ? ',' : '') + (await addCoffee(name))
+  }
+
+  await _addCoffee('에스프레소')
+  console.log(coffeeList)
+
+  await _addCoffee('아메리카노')
+  console.log(coffeeList)
+
+  await _addCoffee('카페모카')
+  console.log(coffeeList)
+
+  await _addCoffee('카페라떼')
+  console.log(coffeeList)
+}
+
+coffeeMaker()
+```
