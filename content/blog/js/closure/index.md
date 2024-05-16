@@ -111,6 +111,8 @@ outer = null
 
 ## 콜백 함수 내부에서 외부 데이터를 사용하고자 할 때
 
+일반적인 콜백 함수 코드
+
 ```jsx
 var fruits = ['apple', 'banana', 'peach']
 var $ul = document.createElement('ul')
@@ -145,6 +147,8 @@ fruits.forEach(function (fruit) {
 document.body.appendChild($ul)
 ```
 
+위 코드는 반복을 피해 alertFruit함수를 따로 선언해서 사용했지만, addEventListener의 기본적으로 첫번째인자를 이벤트 객체를 활용하기 때문에 문제가 발생합니다.
+
 ```jsx
 var fruits = ['apple', 'banana', 'peach']
 var $ul = document.createElement('ul')
@@ -162,6 +166,8 @@ fruits.forEach(function (fruit) {
 
 document.body.appendChild($ul)
 ```
+
+bind를 통해서 첫번째 인자에 원하는 fruit를 전달하지만, this가 null로 바인딩이 됩니다.
 
 ```jsx
 var fruits = ['apple', 'banana', 'peach']
@@ -182,6 +188,8 @@ fruits.forEach(function (fruit) {
 
 document.body.appendChild($ul)
 ```
+
+위 문제점들을 모두 개선하기 위해 alertFruitBuilder를 선언하여 함수를 반환하며 이 반환된 함수는 클로저가 형성되어 추후에 fruit를 참조하여 활용하게 됩니다.
 
 ## 접근 권한 제어
 
