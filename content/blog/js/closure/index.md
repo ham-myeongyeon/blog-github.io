@@ -193,6 +193,83 @@ document.body.appendChild($ul)
 
 ## 접근 권한 제어
 
+자바스크립트에서는 다른 언어와 달리 변수에 대해 접근 권한 기능이 따로 없습니다. 접근 권한을 구현하기 위해 클로저를 이용하여 함수 차원에서 변수에 대한 접근을 차단할 수 있습니다.
+
+클로저를 통해서 외부 함수로 반환할 때 반환한 변수는 공개, 반환하지 않은 변수는 접근을 제한할 수 있습니다.
+
+```jsx
+var car = {
+  fuel: Math.ceil(Math.random() * 10 + 10),
+  power: Math.ceil(Math.random() * 3 + 2),
+  moved: 0,
+  run: function () {
+    var km = Math.ceil(Math.random() * 6)
+    var wasteFuel = km / this.power
+
+    if (this.fuel < wasteFuel) {
+      console.log('이동불가')
+      return
+    }
+
+    this.fuel -= wasteFuel
+    this.moved += km
+    console.log(km + 'km dlehd (총' + this.moved + 'km')
+  },
+}
+```
+
+예를들어 일반적인 객체는 fuel속성에 접근하여 변경이 가능하게 됩니다.
+
+```jsx
+var createCar = function () {
+  var fuel = Math.ceil(Math.random() * 10 + 10)
+  var power = Math.ceil(Math.random() * 3 + 2)
+  var moved = 0
+
+  return {
+    get moved() {
+      return moved
+    },
+    run: function () {
+      var km = Math.ceil(Math.random() * 6)
+      var wasteFuel = km / power
+
+      if (fuel < wasteFuel) {
+        console.log('이동불가')
+        return
+      }
+
+      fuel -= wasteFuel
+      moved += km
+      console.log(km + 'km dlehd (총' + moved + 'km')
+    },
+  }
+}
+
+var car = createCar()
+```
+
+fuel와 같은 속성들은 외부로 노출하지 않으므로서 비공개로 하고, moved는 getter을 통해서 읽기 전용으로 설정했습니다.
+
+접근은 막았지만 car.fuel =1000;와 같은 재할당으로 변경이 가능하게 됩니다.
+
+```jsx
+var createCar = function () {
+  // ...
+
+  var publicMembers = {
+    fuel: Math.ceil(Math.random() * 10 + 10),
+    power: Math.ceil(Math.random() * 3 + 2),
+  }
+
+  Object.freeze(publicMembers)
+
+  return publicMembers
+}
+```
+
+공개는 하지만 변경을 피하고 싶은 변수들은 위 코드처럼 Object.freeze를 통해서 변경을 막은뒤 반환하여 접근하게 할수 있습니다.
+
 ## 부분 적용 함수
 
 ## 커링 함수
