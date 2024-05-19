@@ -287,6 +287,8 @@ var addPartial = add.bind(null, 1, 2, 3, 4, 5)
 console.log(addPartial(6, 7, 8, 9, 10))
 ```
 
+위와 같이 bind를 이용하여 부분 적용함수를 만들 수 있습니다. 그러나 문제는 this를 원하는 값으로 만들지 못합니다.
+
 ```jsx
 var partial = function () {
   var originalPartialArgs = arguments
@@ -317,5 +319,30 @@ var add = function () {
 var addPartial = partial(add, 1, 2, 3, 4, 5)
 console.log(addPartial(6, 7, 8, 9, 10))
 ```
+
+첫번째 인자 함수를 반환하며 나머지 인자를 concat을 이용해서 apply로 전달하고 바로 실행시점에 this를 바인딩하게 합니다.
+
+```jsx
+var debounce = function (eventName, func, wait) {
+  var timeoutId = null
+
+  return function (event) {
+    var self = this
+    console.log(eventName, 'event 발생')
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(func.bind(self, event), wait)
+  }
+}
+
+var moveHandler = function (e) {
+  console.log('move event')
+}
+
+document.body.addEventListener('mousemove', debounce('move', moveHandler, 500))
+```
+
+debounce를 예로들면 setTimeout에 this를 실행 시점을 기준으로 적용하기 위해 self에 담아서 바인딩했습니다.
+
+클로저를 통해서 함수를 반환하며 이벤트 발생후 timeoutId를 참조하며 유지하던중에 clearTimout이 발생하면 이전에 대기큐를 정리하게 만듭니다.
 
 ## 커링 함수
