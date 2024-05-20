@@ -346,3 +346,71 @@ debounce를 예로들면 setTimeout에 this를 실행 시점을 기준으로 적
 클로저를 통해서 함수를 반환하며 이벤트 발생후 timeoutId를 참조하며 유지하던중에 clearTimout이 발생하면 이전에 대기큐를 정리하게 만듭니다.
 
 ## 커링 함수
+
+```jsx
+var curry3 = function (func) {
+  return function (a) {
+    return function (b) {
+      return func(a, b)
+    }
+  }
+}
+
+var getMaxWith10 = curry3(Math.max)(10)
+console.log(getMaxWith10(8))
+console.log(getMaxWith10(25))
+
+var getMaxWith10 = curry3(Math.min)(10)
+console.log(getMaxWith10(8))
+console.log(getMaxWith10(25))
+```
+
+```jsx
+var curry5 = function (func) {
+  return function (a) {
+    return function (b) {
+      return function (c) {
+        return function (d) {
+          return function (e) {
+            return func(a, b, c, d, e)
+          }
+        }
+      }
+    }
+  }
+}
+
+var getMax = curry5(Math.max)
+console.log(getMax(1)(2)(3)(4)(5))
+```
+
+```jsx
+var curry5 = func => a => b => c => d => e => func(a, b, c, d, e)
+```
+
+```jsx
+var getInformation = function (baseUrl) {
+  return function (path) {
+    return function (id) {
+      return fetch(baseUrl + parh + '/' + id)
+    }
+  }
+}
+
+var getInformation = baseUrl => path => id => fetch(baseUrl + path + '/' + id)
+```
+
+```jsx
+const logger = store => next => action => {
+  console.log('dispatching', action)
+  console.log('next state', store.getState())
+
+  return next(action)
+}
+
+const thunk = store => next => action => {
+  return typeof action === 'function'
+    ? action(dispatch, store.getState)
+    : next(action)
+}
+```
