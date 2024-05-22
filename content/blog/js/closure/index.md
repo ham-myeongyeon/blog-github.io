@@ -397,6 +397,9 @@ var curry5 = func => a => b => c => d => e => func(a, b, c, d, e)
 이를 ES6에 있는 화살표 함수를 통해서 간단하게 표현이 가능합니다.
 
 각 단계에서 받은 인자들은 모두 마지막 단계에서 참조할 것이므로 GC되지 않고 메모리에 저장했다가 마지막 호출시 실행 컨텍스트가 종료된후에 GC에서 수거 됩니다.
+커링방식은 마지막 인자가 넘어갈 때가지 함수실행을 미루는 셈인데 이를 함수 프로그래밍에서는 지연실행(lazy execution)이라고 합니다.
+
+원하는 시점까지 지연시켰다가 실행하려고 할때 요긴합니다.
 
 ```jsx
 var getInformation = function (baseUrl) {
@@ -408,6 +411,16 @@ var getInformation = function (baseUrl) {
 }
 
 var getInformation = baseUrl => path => id => fetch(baseUrl + path + '/' + id)
+```
+
+여기서는 보통 baseUrl은 고정되고 나머지 정보는 유동적일 수 있는데 이럴때 커링을 활용하여 baseUrl과 같은 정보는 미리 넘겨 고정시켜두면 유용하게 사용할 수 있습니다.
+
+```jsx
+var imageUrl = 'http://...'
+
+var getImage = getInformation(imageUrl)
+var getEmotion = getImage('emotion')
+var getIcon = getImage('icon')
 ```
 
 ```jsx
@@ -424,3 +437,5 @@ const thunk = store => next => action => {
     : next(action)
 }
 ```
+
+이 코드에서도 store, next는 한번 생성이후 변하지 않으므로 미리 인자를 넘겨 고정시켜두고, 변경하는 action만을 받아 사용하게 됩니다.
