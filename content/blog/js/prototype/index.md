@@ -52,6 +52,32 @@ suzi.__proto__.getName() // undefined
 
 다만 undefined를 출력한 이유는 this가 suzi.**proto**.getName();에서 suzi.**proto**를 바인딩 했기 때문에 undefined를 출력합니다.
 
+```jsx
+var suzi = new Person('Suzi', 28)
+suzi.getName() // Suzi
+```
+
+**proto**를 빼면 this가 instance에 바인딩되어 Suzi가 나오는 건 맞지만 생략해도 접근이 가능항 이유는 **proto**가 생략 가능한 프로퍼티이기 때문입니다.
+
+```jsx
+suzi.__proto__.getName
+=> suzi(.__proto__).getName
+=> suzi.getName
+```
+
+위에 3가지모두 같은 의미입니다.
+
+따라서 **proto**를 생략하여 접근하면 this는 인스턴스에 바인딩이 되고, prototype의 속성을 참조하여 사용할 수 있게 됩니다.
+
+프로토타입의 과정은
+
+- 자바스크립트는 함수에 자동으로 객체인 prototype프로퍼티를 생성합니다.
+- 해당함수를 생성자 함수로, new와 호출하면 인스턴스를 생성하고, 그 인스턴스에는 숨겨진 **proto**가 자동으로 생성됩니다.
+- **proto**는 생성자 함수의 prototype프로퍼티를 참조합니다.
+- 이 **proto**는 생략가능하도록 되어 있습니다.
+
+최종적으로 생성자 함수의 prototype에 어떤 메서드, 프로퍼티가 있다면 인스턴스가 자기의 메서드나 프로퍼티처럼 사용할 수 있습니다.
+
 ## constructor 프로퍼티
 
 # 프로토 타입 체인
