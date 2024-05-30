@@ -80,6 +80,21 @@ suzi.__proto__.getName
 
 ## constructor 프로퍼티
 
+생성자 함수의 prototype 객체 내부에도 constructor라는 프로퍼티가 있습니다. 인스턴스의 **proto**도 가지고 있는데 이는 그 원형이 무엇인지를 알수 있게 해줍니다.
+
+```jsx
+var arr = [1, 2]
+
+Array.prototype.constructor === Array // true
+arr.__proto__.constructor === Array // true
+arr.constructor === Array // true
+
+var arr2 = new arr.constructor(3, 4)
+console.log(arr2) // [3, 4]
+```
+
+**proto**의 constructor를 통해서 Array를 참조할 수 있습니다. 그리고 **proto**는 생략이 가능하기 때문에 인스턴스는 바로 constructor를 참조할수 있게 됩니다.
+
 # 프로토 타입 체인
 
 ## 메서드 오버라이드
