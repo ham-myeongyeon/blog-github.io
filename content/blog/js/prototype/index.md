@@ -111,6 +111,17 @@ dataTypes.forEach(data => {
 ```
 
 1, ‘test’, true를 제외한 모든 데이터의 출력결과는 `NewConstructor & false`입니다. 즉 constructor의 참조하는 대상은 변경되더라도 원형이나 데이터 타입이 바뀌지는 않습니다.
+따라서 아래의 코드들은 서로 같은 대상을 가리킵니다.
+
+```jsx
+;[Constructor][instance].__proto__.constructor[instance].constructor
+Object.getPrototypeOf([instance]).constructor[Constructor].prototype.constructor
+```
+
+```jsx
+;[Constructor].prototype[instance].__proto__[instance]
+Object.getPrototypeOf([instance])
+```
 
 # 프로토 타입 체인
 
