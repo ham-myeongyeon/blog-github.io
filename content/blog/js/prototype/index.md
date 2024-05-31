@@ -95,6 +95,23 @@ console.log(arr2) // [3, 4]
 
 **proto**의 constructor를 통해서 Array를 참조할 수 있습니다. 그리고 **proto**는 생략이 가능하기 때문에 인스턴스는 바로 constructor를 참조할수 있게 됩니다.
 
+constructor은 읽기 전용 속성이 부여된 예외적인 경우(기본형 리터럴 변수 - number, string, boolean)을 제외 하고는 값을 바꿀수 있습니다.
+
+```jsx
+var NewConstructor = function () {
+  console.log('new constructor')
+}
+
+var dataTypes = [1, 'test', true, {}, [], function () {}, new Number()]
+
+dataTypes.forEach(data => {
+  data.constructor = NewConstructor
+  console.log(data.constructor.name, '&', data instanceof NewConstructor)
+})
+```
+
+1, ‘test’, true를 제외한 모든 데이터의 출력결과는 `NewConstructor & false`입니다. 즉 constructor의 참조하는 대상은 변경되더라도 원형이나 데이터 타입이 바뀌지는 않습니다.
+
 # 프로토 타입 체인
 
 ## 메서드 오버라이드
