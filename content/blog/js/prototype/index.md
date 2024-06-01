@@ -127,6 +127,41 @@ Object.getPrototypeOf([instance])
 
 ## 메서드 오버라이드
 
+```jsx
+var Person = function (name) {
+  this.name = name
+}
+
+Person.prototype.getName = function () {
+  return this.name
+}
+
+var iu = new Person('지금')
+iu.getName = function () {
+  return '바로' + this.name
+}
+console.log(iu.getName()) // 바로 지금
+```
+
+getName을 할당하고 메서드를 호출하면 prototype이 아닌 새로 할당한 메서드에서 결과를 출력합니다.
+
+여기서 일어난 현상은 메서드 오버라이드인데 원본을 제거하지 않고 대체하는 것으로, 원본이 있는 상태에서 다른 대상을 그위에 얹는 것 같은 상태를 의미합니다.
+
+이 코드에서 getName을 찾는 방식은 가장 가까운 대상부터 찾는데, 우선 자신의 프로퍼티를 검색하고 없다면 **proto**를 검색하게 됩니다.
+
+이러한 방식으로 원본을 대체하지 않고, 메서드위에 메서드를 얹는 것처럼 검색순서만 달라지는 메서드 오버라이딩 현상이 발생합니다.
+
+원본을 대체하지 않았기 때문에 원본 메서드 prototype.getName에 접근할 수 있게 됩니다.
+
+`iu.__proto__.getName()` 여기서는 this 문제가 생기므로 먼저 할당하고 접근하게 되면
+
+```jsx
+Person.prototype.name = '이 지금'
+console.oog(iu.__proto__.getName()) // 이 지금
+```
+
+오버라이딩 되기전 메서드에 접근할 수 있게 됩니다.
+
 ## 프로토타입 체인
 
 ## 객체 전용 메서드의 예외사항
