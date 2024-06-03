@@ -164,6 +164,10 @@ console.oog(iu.__proto__.getName()) // 이 지금
 
 ## 프로토타입 체인
 
+```jsx
+console.dir([1, 2])
+```
+
 ## 객체 전용 메서드의 예외사항
 
 ## 다중 프로토타입 체인
