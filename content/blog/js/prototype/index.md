@@ -168,6 +168,41 @@ console.oog(iu.__proto__.getName()) // 이 지금
 console.dir([1, 2])
 ```
 
+배열의 내부구조를 보게 되면 **proto**안에는 객체의 **proto**와 동일한 **proto**가 있습니다.
+
+왜냐하면 prototype 객체가 자체가 ‘객체’이기 때문입니다. 그래서 기본적으로 모든 객체의 **proto**에는 Object.prototype이 연결됩니다.
+
+따라서 **proto**는 생략이 가능하므로 배열의 경우 Array.prototype뿐만 아니라, Object.prototype 내부의 메서드도 자신의 것처럼 사용할 수 있습니다.
+
+```jsx
+var arr = [1, 2];
+arr(.__proto__).push(3);
+arr(.__proto__)(.__proto__).hasOwnProperty(2);
+```
+
+어떤 데이터의 **proto** 프로퍼티 내부에 다시 **proto**프로퍼티가 연쇄적으로 이어진 것을 프로토타입 체인 이라고 하며, 이 체인을 따라가며 검색하는 것을 프로토타입 체이닝이라고 합니다.
+
+그래서 프로토타입 체이닝 과정은 메서드 오버라이드와 동일한 맥락입니다.
+
+메서드를 호출할 때 자신의 프로퍼티를 검색하고 있다면 사용, 없다면 **proto**를 검색합니다. 동일하게 또 없다면 다시 **proto**를 검색하여 찾고 결국 찾아낸다면 실행하는 방식입니다.
+
+```jsx
+var arr = [1, 2]
+
+Array.prototype.toString.call(arr) // 1, 2
+Object.prototype.toString.call(arr) // [object Array]
+arr.toString() // 1, 2
+
+arr.toString = function () {
+  return this.join('_')
+}
+arr.toString() // 1_2
+```
+
+위 코드를 보면 프로토 타입체인 과정에 따라 arr.toString()을 호출하면 Array prototype의 toString()메서드의 결과와 같게 호출됩니다.
+
+또 arr.toString에 함수를 할당하면 검색순위에 따라 결과 값이 변경 됩니다.
+
 ## 객체 전용 메서드의 예외사항
 
 ## 다중 프로토타입 체인
