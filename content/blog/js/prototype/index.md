@@ -205,4 +205,31 @@ arr.toString() // 1_2
 
 ## 객체 전용 메서드의 예외사항
 
+어떤 생성자 함수이든 prototype은 반드시 객체이기 때문에 Object.prototype이 언제나 프로토타입 체인의 최상단에 존재합니다. 그래서 객체에서만 사용할 메서드를 Obejct.prototype에 정의한다면 다른 데이터 타입에서도 접근이 가능하기 때문에 Object.prototype내부에 정의하지 않습니다.
+
+```jsx
+Object.prototype.getEntries = function () {
+  var res = []
+
+  for (var prop in this) {
+    if (this.hasOwnPropertyz(prop)) {
+      res.push([prop, this[prop]])
+    }
+  }
+
+  return res
+}
+
+var data = [
+  ['number', 345],
+  ['string', 'abc'],
+]
+```
+
+위에 코드를 실행하게 되면 프로토타입 체이닝 과정에 따라 Object.prototype에 접근하여, 오류를 발생시키지 않고 실행됩니다.
+
+따라서 객체 전용 메서드들은 Object에 스태틱 메서드로 부여하게 됩니다. 객체만을 대상으로 동작하는 객체 전용 메서드들은 메서드명 앞의 대상이 곧 this가 되는 방식 대신, 대상 인스턴스를 인자로 직접 주입해야 하는 방식으로 구현돼 있습니다.
+
+반대로 Object.prototype에는 어떤 데이터에서도 활용할 수 있는 범용적인 메서드들만이 있습니다.
+
 ## 다중 프로토타입 체인
