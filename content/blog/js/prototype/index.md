@@ -254,3 +254,25 @@ console.dir(obj)
 이 obj에 getValue에 접근하면 메서드를 호출하게 되며, console.dir로 구조를 출력하면 **proto**에는 getValue만 있게 됩니다.
 
 ## 다중 프로토타입 체인
+
+**proto**로 연결하여 체인 관계를 이어나가는 방법으로, 다른 언어의 클래스와 비슷하게 인스턴스를 구성할 수 있습니다.
+
+```
+var Grade = function () {
+  var args = Array.prototype.slice.call(arguments);
+  for (var i = 0; i < args.length; i++) {
+    this[i] = args[i];
+  }
+  this.length = args.length;
+}
+
+var g = new Grade(100, 80);
+```
+
+변수 g는 Grade의 인스턴스로 유사배열객체입니다.
+
+```
+Grade.prototype = [];
+```
+
+이렇게 되면 Grade.prototype이 배열의 인스턴스를 바라보며 **proto** 연결로 다중 프로토타입체인 형성으로 배열의 메서드를 사용할 수 있게 됩니다.
