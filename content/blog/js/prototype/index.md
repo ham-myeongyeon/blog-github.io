@@ -232,4 +232,25 @@ var data = [
 
 반대로 Object.prototype에는 어떤 데이터에서도 활용할 수 있는 범용적인 메서드들만이 있습니다.
 
+> Object.create()
+
+Object.create() 메서드는 인자를 프로토타입으로 하는 객체를 만듭니다. 따라서 **proto**가 없는 객체를 만든다면 Object.create(null)를 호출하여 만들수 있습니다.
+
+```jsx
+var _proto = Object.create(null)
+_proto.getValue = function (key) {
+  return this[key]
+}
+
+var obj = Object.create(_proto)
+obj.a = 1
+
+console.log(obj.getValue('a'))
+console.dir(obj)
+```
+
+먼저 \_proto 프로토타입이 없는 객체를 반환하여 할당합니다. 다시 \_proto에 getValue메서드를 추가하고 이 \_proto를 인자로 하여 Object.create()를 호출합니다. 그러면 \_proto를 프로토타입으로 가지는 obj를 만들게 됩니다.
+
+이 obj에 getValue에 접근하면 메서드를 호출하게 되며, console.dir로 구조를 출력하면 **proto**에는 getValue만 있게 됩니다.
+
 ## 다중 프로토타입 체인
