@@ -13,3 +13,32 @@ date: '2024-06-10T03:55:40'
 이 추상적인 클래스를 구현한 실존하는 구체적인 예시를 인스턴스라고 합니다.
 
 현실에서는 인스턴스들로 부터 공통적인 요소를 지니는 개체들을 클래스로 정의하지만, 프로그래밍에서는 클래스가 정의돼야만 공통적인 요소를 지니는 인스턴스를 생성할 수 있습니다.
+
+# 자바스크립트의 클래스
+
+프로토타입을 클래스 관점에서 접근하면 new 연산자와 함께 Array를 호출하면 Array를 일종의 클래스로 보고 Array prototype 객체 내부요소들이 인스턴스에 상속되는 것처럼 볼 수 있습니다.
+
+인스턴스에 상속되는지 여부에 따라 스태틱 멤버(static member)와 인스턴스 멤버(instance member)로 나뉩니다. 그리고 자바스크립트에서는 프로토타입 및 인스턴스의 메서드가 같이 인스턴스에 적용돼므로 스태틱 메서드, 프로토타입 메서드, 인스턴스 메서드로 나눌수 있습니다.
+
+```jsx
+// 생성자
+var Rectangle = function (width, height) {
+  this.width = width
+  this.height = height
+}
+// (프로토타입)메서드
+Rectangle.prototype.getArea = function () {
+  return this.width * this.height
+}
+// 스태틱 메서드
+Rectangle.isRectangle = function (instance) {
+  return (
+    instance instanceof Rectangle && instance.width > 0 && instance.height > 0
+  )
+}
+
+var rect1 = new Rectangle(3, 4)
+console.log(rect1.getArea())
+console.log(rect1.isRectangle(rect1)) // Error
+console.log(Rectangle.isRectangle(rect1))
+```
