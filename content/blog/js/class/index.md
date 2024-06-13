@@ -42,3 +42,34 @@ console.log(rect1.getArea())
 console.log(rect1.isRectangle(rect1)) // Error
 console.log(Rectangle.isRectangle(rect1))
 ```
+
+# 클래스 상속
+
+## 기본 구현
+
+- 일반적인 프로토타입 상속
+
+```jsx
+var Grade = function () {
+  var args = Array.prototype.slice.call(arguments)
+  for (var i = 0; i < args.length; i++) {
+    this[i] = args[i]
+  }
+  this.length = args.length
+}
+
+Grade.prototype = []
+var g = new Grade(100, 80)
+
+g.push(90).console.log(g)
+
+delete g.length
+g.push(70)
+console.log(g)
+```
+
+여기서 문제점은 기존 인스턴스에서 상속받은 length프로퍼티는 삭제가 가능하기 때문에 지워지고 그다음 push를 실행하게 되면 프로토타입 체인을 따라 검색하며 빈 배열의 length를 참고하며 push하게 됩니다.
+
+그러면 length는 1이 되며 빈 배열에 70을 추가하게 되어 맨앞에 70이 들어가게 됩니다.
+
+이 방법은 클래스에 있는 값이 인스턴스의 동작에 영향을 주므로 오류가 발생할 가능성이 높습니다.
