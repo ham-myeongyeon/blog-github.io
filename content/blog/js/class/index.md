@@ -73,3 +73,27 @@ console.log(g)
 그러면 length는 1이 되며 빈 배열에 70을 추가하게 되어 맨앞에 70이 들어가게 됩니다.
 
 이 방법은 클래스에 있는 값이 인스턴스의 동작에 영향을 주므로 오류가 발생할 가능성이 높습니다.
+
+## 클래스가 구체적인 데이터를 지니지 않게 하는 방법
+
+- 더글라스 크락포드가 제시한, 빈 생성자 함수(Bridge)로 연결하는 방법
+
+```jsx
+var Rectangle = function (width, height) {
+  this.width = width
+  this.height = height
+}
+Rectangle.prototype.getArea = function () {
+  return this.width * this.height
+}
+var Square = function (width) {
+  Rectangle.call(this, width, height)
+}
+
+var Bridge = function () {}
+Bridge.prototype = Rectangle.prototype
+Square.prototype = new Bridge()
+Object.freeze(Square.prototype)
+```
+
+Bridge라는 빈 함수를 만들고 Bridge.prototype이 Rectangle.prototype을 참조하게 한 다음, Square.prototype에 new Bridge()로 할당하면 Rectangle자리에 Bridge가 대체하게 됩니다. 이로써 인스턴슬를 제외한 프로토타입 체인 경로상에는 구체적인 데이터가 남지않게 됩니다.
