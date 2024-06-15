@@ -97,3 +97,14 @@ Object.freeze(Square.prototype)
 ```
 
 Bridge라는 빈 함수를 만들고 Bridge.prototype이 Rectangle.prototype을 참조하게 한 다음, Square.prototype에 new Bridge()로 할당하면 Rectangle자리에 Bridge가 대체하게 됩니다. 이로써 인스턴슬를 제외한 프로토타입 체인 경로상에는 구체적인 데이터가 남지않게 됩니다.
+
+- Object.create를 활용하는 방법
+
+```jsx
+Square.prototype = Object.create(Rectangle.prototype)
+Object.freeze(Square.prototype)
+```
+
+Object.create로 Rectangle.prototype을 **proto**로 가지는 객체를 Square.prototype에 연결합니다.
+
+이렇게 하면 인스턴스의 구체적인 데이터도 남기지 않으며 연결할 수 있습니다.
