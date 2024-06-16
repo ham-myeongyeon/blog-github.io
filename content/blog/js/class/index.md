@@ -108,3 +108,17 @@ Object.freeze(Square.prototype)
 Object.create로 Rectangle.prototype을 **proto**로 가지는 객체를 Square.prototype에 연결합니다.
 
 이렇게 하면 인스턴스의 구체적인 데이터도 남기지 않으며 연결할 수 있습니다.
+
+## constructor 복구하기
+
+위 방법 모두 prototype상속은 이루어졌지만 Subclass의 인스턴스의 constructor은 SuperClass를 가리키게 됩니다. 정확히는 SupaerClass.prototype의 constructor를 여전히 가리키는 상태입니다.
+
+따라서 명시적으로 constructor를 지정해야 합니다.
+
+```jsx
+Square.prototype = Object.create(Rectangle.prototype)
+// 생성자 함수 연결
+Square.prottype.constructor = Square
+
+Object.freeze(Square.prototype)
+```
